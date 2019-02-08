@@ -104,4 +104,4 @@ class VadDetection(Stage):
         output = sess.run(logits)
         output = np.mean(output, axis=0)
 
-        data.output = output
+        data.output_data = output
