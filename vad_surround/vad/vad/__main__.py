@@ -35,7 +35,7 @@ def transform(input_dir, output_dir, config_path):
 
     # TODO: Read data from input directory here
 
-    data = VadData("data")
+    data = VadData(None)
     surround.process(data)
     with open(os.path.abspath(os.path.join(output_dir, "output.txt")), 'w') as f:
         f.write(data.output_data)
