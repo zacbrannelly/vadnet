@@ -29,6 +29,10 @@ class ValidateData(Stage):
         if not all([type(sample) is float for sample in data.input_data]):
             data.error = "The input data was not floats!"
             return
+
+        if len(data.input_data) > 48000:
+            size = len(data.input_data)
+            data.input_data = data.input_data[size - 48000 : size]
          
 class VadDetection(Stage):
     def load_model(self):

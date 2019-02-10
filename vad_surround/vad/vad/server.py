@@ -37,7 +37,7 @@ def main():
             print("Noise: " + str(data.output_data[0] * 100.0) + " Voice: " + str(data.output_data[1] * 100.0))
 
             # Sending the results back to who made the request
-            sock.sendto(json.dumps({ "noise": data.output_data[0], "voice:": data.output_data[1] }), address=(source_addr[0], 25565))
+            sock.sendto(json.dumps({ "noise": float(data.output_data[0]), "voice:": float(data.output_data[1]) }).encode(), (source_addr[0], 25565))
         else:
             print(data.error)
             break
