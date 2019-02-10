@@ -15,20 +15,20 @@ def main():
     surround.init_stages()
 
     while True:
-        data = []
+        audio_input = []
 
-        while len(data) < 48000:
+        while len(audio_input) < 48000:
             # Retrieve data from client (9600 samples in bytes = 9600 * 2 bytes (2 bytes per sample))
             data_bytes, _ = sock.recvfrom(9600 * 2)
 
             # Convert the byte array into an array of float samples (-1 to 1)
-            j = 0
-            for _ in range(int(len(data_bytes) / 2)):
-                two_bytes = [data_bytes[j], data_bytes[j+1]]
-                data.append(int.from_bytes(two_bytes, sys.byteorder, signed=True) / 32767.0)
-                j += 2
+            for i in range(0, len(data_bytes), 2):
+                sample = int.from_bytes(data_bytes[i : i + 2], sys.byteorder, signed=True)
+                sample /= 32767.0
 
-        data = VadData(data)
+                audio_input.append(sample)
+
+        data = VadData(audio_input)
         surround.process(data)
 
         if data.error is None and data.output_data is not None:
