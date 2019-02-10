@@ -17,16 +17,16 @@ class VadData(SurroundData):
 
 class ValidateData(Stage):
     def operate(self, data, config):
-        if data.input is None:
+        if data.input_data is None:
             data.error = "The input data was null!"
             return
 
         # Make sure the data is an array of numbers
-        if type(data.input) is not list:
+        if type(data.input_data) is not list:
             data.error = "The input data is not an array!"
             return
 
-        if not all([type(sample) is float for sample in data.input]):
+        if not all([type(sample) is float for sample in data.input_data]):
             data.error = "The input data was not floats!"
             return
          
@@ -52,7 +52,7 @@ class VadDetection(Stage):
             self.error = "Could not locate vocab.json"
             return
         
-        self.graph = tf.graph() 
+        self.graph = tf.Graph() 
 
         with self.graph.as_default():
             logging.info('loading model: {}'.format(checkpoint_path))
@@ -80,7 +80,8 @@ class VadDetection(Stage):
 
         try: 
             self.load_model()
-        except:
+        except Exception as e:
+            print(e)
             self.error = "Failed to load models"
 
     def operate(self, data, config):
@@ -97,7 +98,7 @@ class VadDetection(Stage):
         init = self.init
         logits = self.logits
 
-        input = np.asmatrix(data.input).reshape(-1, x.shape[1])
+        input = np.asmatrix(data.input_data).reshape(-1, x.shape[1])
         dummy = np.zeros((input.shape[0], ), dtype=np.int32)
 
         sess.run(init, feed_dict = { x: input, y: dummy, ph_n_shuffle: 1, ph_n_repeat: 1, ph_n_batch: input.shape[0] })

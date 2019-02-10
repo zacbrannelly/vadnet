@@ -2,11 +2,11 @@ import socket
 import sys 
 
 from surround import Surround, Config
-from .stages import VadData, ValidateData, VadDetection
+from stages import VadData, ValidateData, VadDetection
 
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('127.0.0.1', 1024))
+    sock.bind(('0.0.0.0', 1024))
 
     surround = Surround([ValidateData(), VadDetection()])
     config = Config()
@@ -15,22 +15,24 @@ def main():
     surround.init_stages()
 
     while True:
-        # Retrieve data from client (9600 samples in bytes = 9600 * 2 bytes (2 bytes per sample))
-        data_bytes, _ = sock.recvfrom(9600 * 2)
         data = []
 
-        # Convert the byte array into an array of float samples (-1 to 1)
-        j = 0
-        for _ in range(int(len(data_bytes) / 2)):
-            two_bytes = [data_bytes[j], data_bytes[j+1]]
-            data.append(int.from_bytes(two_bytes, sys.byteorder, signed=True) / 32767.0)
-            j += 2
+        while len(data) < 48000:
+            # Retrieve data from client (9600 samples in bytes = 9600 * 2 bytes (2 bytes per sample))
+            data_bytes, _ = sock.recvfrom(9600 * 2)
+
+            # Convert the byte array into an array of float samples (-1 to 1)
+            j = 0
+            for _ in range(int(len(data_bytes) / 2)):
+                two_bytes = [data_bytes[j], data_bytes[j+1]]
+                data.append(int.from_bytes(two_bytes, sys.byteorder, signed=True) / 32767.0)
+                j += 2
 
         data = VadData(data)
         surround.process(data)
 
-        if data.error is None:
-            print(data.output_data)
+        if data.error is None and data.output_data is not None:
+            print("Noise: " + str(data.output_data[0] * 100.0) + " Voice: " + str(data.output_data[1] * 100.0))
         else:
             print(data.error)
         
