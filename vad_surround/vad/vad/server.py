@@ -15,8 +15,9 @@ def main():
 
     surround.init_stages()
 
+    audio_input = []
+
     while True:
-        audio_input = []
         source_addr = None
 
         while len(audio_input) < 48000:
@@ -32,6 +33,8 @@ def main():
 
         data = VadData(audio_input)
         surround.process(data)
+
+        audio_input = audio_input[9600 * 2 - 1:]
 
         if data.error is None and data.output_data is not None:
             print("Noise: " + str(data.output_data[0] * 100.0) + " Voice: " + str(data.output_data[1] * 100.0))
