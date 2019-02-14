@@ -21,14 +21,14 @@ class ValidateData(Stage):
             data.error = "The input data was null!"
             return
 
-        # Make sure the data is an array of numbers
+        '''# Make sure the data is an array of numbers
         if type(data.input_data) is not list:
             data.error = "The input data is not an array!"
             return
 
         if not all([type(sample) is float for sample in data.input_data]):
             data.error = "The input data was not floats!"
-            return
+            return'''
 
         if len(data.input_data) > 48000:
             size = len(data.input_data)
