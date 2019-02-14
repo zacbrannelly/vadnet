@@ -22,9 +22,6 @@ def main():
     audio_input = []
     last_packet_time = time.time()
     packet_id = -1
-    last_id = -1
-    counter = 0
-    packet_loss = 0
 
     while True:
         source_addr = None
@@ -33,23 +30,14 @@ def main():
             # Retrieve data from client (9600 samples in bytes = 9600 * 2 bytes (2 bytes per sample))
             data_bytes, source_addr = sock.recvfrom(2400 * 2 + 4)
 
+            # If last packet received was 5 seconds ago, clear cache
             if last_packet_time + 5 < time.time():
                 audio_input.clear()
-                counter = 0
-                last_id = -1
-                packet_loss = 0
 
             last_packet_time = time.time()
 
+            # Get the packet id from the end of the byte array
             packet_id = int.from_bytes(data_bytes[2400 * 2:], sys.byteorder, signed=True)
-            
-            if last_id + 1 != packet_id: 
-                print('Expected: ' + str(last_id + 1) + ' Got: ' + str(packet_id))
-                if last_id + 1 < packet_id:
-                    packet_loss += packet_id - (last_id + 1)
-                print('Packet Loss: ' + str(packet_loss))
-
-            last_id = packet_id
 
             # Convert the byte array into an array of float samples (-1 to 1)
             for i in range(0, len(data_bytes) - 4, 2):
@@ -58,9 +46,11 @@ def main():
 
                 audio_input.append(sample)
 
+        # Process the audio data for voice activity 
         data = VadData(audio_input)
         surround.process(data)
 
+        # Rolling window of 2400 samples (50ms)
         audio_input = audio_input[2400:]
 
         if data.error is None and data.output_data is not None:
